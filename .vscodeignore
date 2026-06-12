@@ -13,7 +13,6 @@ vsc-extension-quickstart.md
 **/test/**
 **/tests/**
 **/*.spec.js
-**/node_modules/**
 **/yarn.lock
 **/package-lock.json
 **/.vscodeignore
@@ -30,5 +29,6 @@ vsc-extension-quickstart.md
 **/out/**
 **/.idea/**
 **/*.iml
+**/.history/**
 **/deploy.sh
 **/CHANGELOG.md

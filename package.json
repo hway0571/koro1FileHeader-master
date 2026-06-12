@@ -64,24 +64,9 @@
     "koro1"
   ],
   "activationEvents": [
+    "*",
     "onCommand:extension.fileheader",
-    "onCommand:extension.cursorTip",
-    "onLanguage:javascript",
-    "onLanguage:typescript",
-    "onLanguage:c",
-    "onLanguage:cpp",
-    "onLanguage:java",
-    "onLanguage:python",
-    "onLanguage:go",
-    "onLanguage:rust",
-    "onLanguage:php",
-    "onLanguage:ruby",
-    "onLanguage:swift",
-    "onLanguage:objective-c",
-    "onLanguage:shellscript",
-    "onLanguage:vue",
-    "onLanguage:html",
-    "onLanguage:css"
+    "onCommand:extension.cursorTip"
   ],
   "main": "./src/main.js",
   "contributes": {
@@ -204,11 +189,18 @@
               "hpp": true
             },
             "headerSections": {
-              "Public include": "/* Public include -----------------------------------------公共头文件 */",
-              "Public macro": "/* Public macro -------------------------------------------公共宏定义 */",
-              "Public typedef": "/* Public typedef ----------------------------------------公共类型定义 */",
-              "Public variable": "/* Public variable ---------------------------------------公共变量申明 */",
-              "Public functions": "/* Public functions --------------------------------------公共函数申明 */"
+              "Public include": "/* Public include ---------------------公共头文件--------------------------*/",
+              "Public macro": "/* Public macro -----------------------公共宏定义--------------------------*/",
+              "Public typedef": "/* Public typedef ---------------------公共类型定义------------------------*/",
+              "Public variable": "/* Public variable --------------------公共变量申明------------------------*/",
+              "Public functions": "/* Public functions -------------------公共函数申明------------------------*/"
+            },
+            "sourceSections": {
+              "Private includes": "/* Private includes ---------------私有头文件--------------------------*/",
+              "Private macro": "/* Private macro ------------------私有宏定义--------------------------*/",
+              "Private variables": "/* Private variables --------------私有变量----------------------------*/",
+              "Private function prototypes": "/* Private function prototypes ----私有函数原型------------------------*/",
+              "Private functions": "/* Private functions --------------私有函数定义------------------------*/"
             }
           },
           "description": "插件配置选项,readme:https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE"

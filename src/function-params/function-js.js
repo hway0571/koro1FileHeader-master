@@ -96,6 +96,6 @@ class GetParams {
       this.match = true
     }
   }
-}
+}console.log('test')
 
 module.exports = new GetParams()

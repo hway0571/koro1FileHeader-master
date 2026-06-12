@@ -6,46 +6,80 @@
  * @LastEditTime : 2021-02-26 16:42:03
  */
 const vscode = require('vscode')
-const global = require('./utile/CONST')
-const createAnnotation = require('./models/createAnnotation')
-const ActiveHandle = require('./models/activeHandle')
-const Design = require('./design')
-const handleError = require('./logic/handleError')
+const fs = require('fs')
+const path = require('path')
+
+// 写入日志到文件
+function logToFile (message) {
+  try {
+    const logFile = path.join(__dirname, '..', '..', 'fileheader-debug.log')
+    const timestamp = new Date().toISOString()
+    fs.appendFileSync(logFile, `[${timestamp}] ${message}\n`)
+  } catch (e) {}
+}
+
+logToFile('=== fileheader: main.js loaded ===')
+
+let global, createAnnotation, ActiveHandle, Design, handleError
+try {
+  global = require('./utile/CONST')
+  createAnnotation = require('./models/createAnnotation')
+  ActiveHandle = require('./models/activeHandle')
+  Design = require('./design')
+  handleError = require('./logic/handleError')
+  logToFile('=== fileheader: all modules loaded ===')
+} catch (e) {
+  logToFile(`=== fileheader: module load error: ${e.message} ===`)
+  throw e
+}
 
 // 注册命令
 function registerCommand (context) {
-  // 注册命令
-  const fileHeader = vscode.commands.registerCommand(
-    'extension.fileheader',
-    () => {
-      const editor = vscode.editor || vscode.window.activeTextEditor // 每次运行选中文件
-      createAnnotation.headerAnnotation(editor)
-    }
-  )
-  const cursorTip = vscode.commands.registerCommand(
-    'extension.cursorTip',
-    createAnnotation.functionAnnotation
-  )
-  const codeDesign = vscode.commands.registerCommand(
-    'extension.codeDesign',
-    () => {
-      new Design().headDesignCreate()
-    }
-  )
-  context.subscriptions.push(fileHeader)
-  context.subscriptions.push(cursorTip)
-  context.subscriptions.push(codeDesign)
+  logToFile('=== fileheader: registerCommand start ===')
+  try {
+    // 注册命令
+    const fileHeader = vscode.commands.registerCommand(
+      'extension.fileheader',
+      () => {
+        logToFile('=== fileheader: extension.fileheader command executed ===')
+        const editor = vscode.editor || vscode.window.activeTextEditor
+        createAnnotation.headerAnnotation(editor)
+      }
+    )
+    const cursorTip = vscode.commands.registerCommand(
+      'extension.cursorTip',
+      () => {
+        logToFile('=== fileheader: extension.cursorTip command executed ===')
+        createAnnotation.functionAnnotation()
+      }
+    )
+    const codeDesign = vscode.commands.registerCommand(
+      'extension.codeDesign',
+      () => {
+        logToFile('=== fileheader: extension.codeDesign command executed ===')
+        new Design().headDesignCreate()
+      }
+    )
+    context.subscriptions.push(fileHeader)
+    context.subscriptions.push(cursorTip)
+    context.subscriptions.push(codeDesign)
+    logToFile('=== fileheader: all commands registered ===')
+  } catch (err) {
+    logToFile(`=== fileheader: registerCommand error: ${err.message} ===`)
+  }
 }
 
 // 扩展激活 默认运行
 function activate (context) {
-  // 当插件关闭时被清理的可清理列表
+  logToFile('=== fileheader: activate start ===')
   try {
     global.context = context
-    registerCommand(context) // 注册命令
-    new Design().registerCommand() // 监听注释图案
-    new ActiveHandle().watch() // 监听事件
+    registerCommand(context)
+    new Design().registerCommand()
+    new ActiveHandle().watch()
+    logToFile('=== fileheader: activate end ===')
   } catch (err) {
+    logToFile(`=== fileheader: activate error: ${err.message} ===`)
     handleError.showErrorMessage('fileHeader: activate context', err)
   }
 }

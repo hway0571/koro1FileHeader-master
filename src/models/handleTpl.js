@@ -65,16 +65,28 @@ function editLineFn (fsPath, config) {
   const beforeAnnotation = getFileEndConfig(config, 'beforeAnnotation', fileEnd)
   // 注释之后添加内容
   let afterAnnotation = getFileEndConfig(config, 'afterAnnotation', fileEnd)
-  
+
   // 对于 C/C++ 头文件，自动生成条件编译保护和公共部分注释标记
   // 检查配置中是否启用了头文件保护
   if ((fileEnd === 'h' || fileEnd === 'hpp') && config.configObj.headerGuard[fileEnd]) {
     const headerGuard = generateHeaderGuard(fsPath)
-    const commonSections = generateCommonSections(config)
+    const commonSections = generateCommonSections(config, 'headerSections')
     // 不要在 #ifndef 之前添加空行，直接跟在头部注释之后
     afterAnnotation = `${headerGuard}${commonSections}`
   }
-  
+
+  // 对于 C/C++ 源文件，添加私有部分注释标记
+  if (fileEnd === 'c' || fileEnd === 'cpp') {
+    const privateSections = generateCommonSections(config, 'sourceSections')
+    if (privateSections) {
+      if (afterAnnotation) {
+        afterAnnotation = `${afterAnnotation}\n${privateSections}`
+      } else {
+        afterAnnotation = privateSections
+      }
+    }
+  }
+
   return { lineNum, beforeAnnotation, afterAnnotation, fileEnd }
 }
 
@@ -88,45 +100,50 @@ function generateHeaderGuard (fsPath) {
   const pathArr = fsPath.replace(/\\/g, '/').split('/')
   const fileName = pathArr[pathArr.length - 1]
   const fileNameWithoutExt = fileName.replace(/\.(h|hpp)$/i, '')
-  
+
   // 生成保护宏名称（转换为大写，替换特殊字符为下划线）
   const guardName = '_' + fileNameWithoutExt.toUpperCase().replace(/[^a-zA-Z0-9]/g, '_') + '_H_'
-  
+
   // 不要在 #define 后面添加空行，只添加一个换行
   return `#ifndef ${guardName}\n#define ${guardName}\n`
 }
 
 /**
- * @description: 生成公共部分注释标记
+ * @description: 生成公共/私有部分注释标记
  * @param {Object} config 用户配置
- * @return: {String} 公共部分注释标记
+ * @param {String} sectionType 配置类型: 'headerSections' 或 'sourceSections'
+ * @return: {String} 注释标记
  */
-function generateCommonSections (config) {
-  // 获取配置中的公共部分注释标记，如果没有配置则使用默认值
-  const sections = config.configObj.headerSections || {
-    'Public include': '/* Public include -----------------------------------------公共头文件 */',
-    'Public macro': '/* Public macro -------------------------------------------公共宏定义 */',
-    'Public typedef': '/* Public typedef ----------------------------------------公共类型定义 */',
-    'Public variable': '/* Public variable ---------------------------------------公共变量申明 */',
-    'Public functions': '/* Public functions --------------------------------------公共函数申明 */'
+function generateCommonSections (config, sectionType) {
+  // 获取配置中的注释标记，如果没有配置则使用默认值
+  const sections = config.configObj[sectionType]
+
+  // 如果没有配置，头文件只返回 #endif（配合 headerGuard），源文件返回空字符串
+  if (!sections) {
+    if (sectionType === 'headerSections') {
+      return '#endif'
+    }
+    return ''
   }
-  
+
   // 直接使用配置中的值作为注释行内容
   const sectionKeys = Object.keys(sections)
   let sectionsStr = ''
   sectionKeys.forEach((key, index) => {
     if (index === 0) {
-      // 第一行前面不要换行，直接跟在 #define 后面
+      // 第一行前面不要换行
       sectionsStr += `${sections[key]}\n`
     } else {
       // 后续行之间有空行
       sectionsStr += `\n${sections[key]}\n`
     }
   })
-  
-  // 在最后添加 #endif
-  sectionsStr += '\n#endif'
-  
+
+  // 对于头文件，在最后添加 #endif
+  if (sectionType === 'headerSections') {
+    sectionsStr += '\n#endif'
+  }
+
   return sectionsStr
 }
 
