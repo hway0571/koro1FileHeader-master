@@ -31,5 +31,4 @@ vsc-extension-quickstart.md
 **/.idea/**
 **/*.iml
 **/deploy.sh
-**/LICENSE
 **/CHANGELOG.md
